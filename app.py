@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, request, jsonify
 import json
 from datetime import datetime
 
@@ -15,12 +15,20 @@ def get_next_train(timetable):
     future = [t for t in timetable if t["time"] > now]
     return future[0] if future else timetable[0]
 
-@app.route("/")
-def home():
-    return "Train API running"
+def alexa_response(text):
+    return {
+        "version": "1.0",
+        "response": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": text
+            },
+            "shouldEndSession": True
+        }
+    }
 
-@app.route("/next")
-def next_train():
+@app.route("/", methods=["POST","GET"])
+def alexa():
     n = get_next_train(nagoya)
     t = get_next_train(toyohashi)
 
@@ -29,4 +37,4 @@ def next_train():
         f"豊橋方面は {t['time']} {t['dest']}行き {t['type']}です。"
     )
 
-    return jsonify({"speech": speech})
+    return jsonify(alexa_response(speech))
